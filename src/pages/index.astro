@@ -6,10 +6,11 @@
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
     <meta name="description" content="R Rated Movies — Something bold is coming. Sign up to be first in." />
     <title>R Rated Movies — Coming Soon</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,7 +20,9 @@
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+      /* Force dark mode globally — overrides OS/browser preference */
       :root {
+        color-scheme: dark;
         --red:     #e8000d;
         --red-dim: #8a000a;
         --gold:    #c9a84c;
@@ -30,16 +33,32 @@
         --text:    #e8e0d5;
       }
 
-      html { scroll-behavior: smooth; }
+      /* Prevent any light-mode overrides from browser or system */
+      @media (prefers-color-scheme: light) {
+        :root {
+          color-scheme: dark;
+          --black:   #080808;
+          --surface: #111111;
+          --border:  #1e1e1e;
+          --muted:   #555;
+          --text:    #e8e0d5;
+        }
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background: #080808; /* prevents white flash on load */
+      }
 
       body {
-        background: var(--black);
-        color: var(--text);
+        background: var(--black) !important;
+        color: var(--text) !important;
         font-family: 'DM Sans', sans-serif;
         font-weight: 300;
         min-height: 100vh;
         overflow-x: hidden;
         cursor: default;
+        -webkit-font-smoothing: antialiased;
       }
 
       /* ── Film grain overlay ── */
@@ -332,7 +351,6 @@
     <!-- Animated film strip -->
     <div class="filmstrip" aria-hidden="true">
       <div class="filmstrip-holes">
-        <!-- 40 holes, duplicated for seamless loop -->
         {Array.from({length: 40}).map(() => <span></span>)}
         {Array.from({length: 40}).map(() => <span></span>)}
       </div>
@@ -351,29 +369,23 @@
         </h1>
 
         <p class="tagline">
-          Something <strong>bold, unfiltered, and worth the wait</strong>       is on the way.
-          We're literally building it right now! Where do you want to be when the curtain rises?
+          Something <strong>bold, unfiltered, and worth the wait</strong> is on the way.
+          We're literally building it right now! Where do <strong>you</strong> want to be when the curtain rises?
         </p>
 
         <div class="divider">
-          <span>Get Early Access</span>
+          <span>World Première Sign-Up</span>
         </div>
 
         <!-- ═══════════════════════════════════════════════════════════
-             MAILCHIMP EMBEDDED FORM
-             Replace the action URL with your own from:
-             Mailchimp → Audience → Signup forms → Embedded forms
-             Copy the full action="..." URL and paste it below.
-             Also replace the hidden bot-trap input name (b_XXXXX_XXXXX).
-             Mailchimp "From" address should be set to support@rratedmovies.win
-             (see setup instructions provided separately)
+             MAILCHIMP EMBEDDED FORM — action URL is live
+             Mailchimp "From" address should be set to info@rratedmovies.win
         ════════════════════════════════════════════════════════════ -->
         <div class="signup-block">
-          <label class="form-label" for="mce-EMAIL">Notify me when you're live</label>
-
+          <label class="form-label" for="mce-EMAIL">Want an invite to our first red carpet event?</label>
           <div id="mc_embed_signup">
             <form
-              action="https://win.us9.list-manage.com/subscribe/post?u=c6b718cc813ee397910ccf2eb&amp;id=3e0e927fe5&amp;f_id=00df08e1f0" method="post"
+              action="https://win.us9.list-manage.com/subscribe/post?u=c6b718cc813ee397910ccf2eb&amp;id=3e0e927fe5&amp;f_id=00df08e1f0"
               method="post"
               id="mc-embedded-subscribe-form"
               name="mc-embedded-subscribe-form"
@@ -394,7 +406,7 @@
                     <input type="text" name="b_c6b718cc813ee397910ccf2eb_3e0e927fe5" tabindex="-1" value="" />
                   </div>
                   <button type="submit" name="subscribe" id="mc-embedded-subscribe">
-                    Notify Me
+                    Save Me A Seat!
                   </button>
                 </div>
               </div>
@@ -403,13 +415,13 @@
 
           <p class="form-footnote">
             Zero spam, ever. Unsubscribe any time. Confirmation emails sent from
-            <a href="mailto:info@rratedmovies.win">info@rratedmovies.win</a> · Powered by
-            you.
+            <a href="mailto:info@rratedmovies.win">info@rratedmovies.win</a> when functioning · Powered by 
+            💜+Y'all.
           </p>
         </div>
 
         <footer class="page-footer">
-          <span>&copy; 2026 R Rated Movies</span>
+          <span>&copy; 2026+ R Rated Movies</span>
           <span class="footer-right">
             Questions? <a href="mailto:info@rratedmovies.win">info@rratedmovies.win</a>
           </span>
