@@ -1,0 +1,420 @@
+---
+// src/pages/index.astro
+// RRatedMovies — Coming Soon Page
+// Replace your entire src/pages/index.astro with this file.
+// No component imports needed — fully self-contained.
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="RRatedMovies — Something bold is coming. Sign up to be first in." />
+    <title>RRatedMovies — Coming Soon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --red:     #e8000d;
+        --red-dim: #8a000a;
+        --gold:    #c9a84c;
+        --black:   #080808;
+        --surface: #111111;
+        --border:  #1e1e1e;
+        --muted:   #555;
+        --text:    #e8e0d5;
+      }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        background: var(--black);
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 300;
+        min-height: 100vh;
+        overflow-x: hidden;
+        cursor: default;
+      }
+
+      /* ── Film grain overlay ── */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 100;
+        opacity: 0.35;
+      }
+
+      /* ── Ambient glow ── */
+      .glow-red {
+        position: fixed;
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(232,0,13,0.12) 0%, transparent 70%);
+        border-radius: 50%;
+        top: -150px; left: -150px;
+        pointer-events: none;
+        animation: driftA 18s ease-in-out infinite alternate;
+      }
+      .glow-gold {
+        position: fixed;
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        bottom: -100px; right: -100px;
+        pointer-events: none;
+        animation: driftB 22s ease-in-out infinite alternate;
+      }
+      @keyframes driftA { from { transform: translate(0,0); } to { transform: translate(80px, 60px); } }
+      @keyframes driftB { from { transform: translate(0,0); } to { transform: translate(-60px, -80px); } }
+
+      /* ── Film strip top bar ── */
+      .filmstrip {
+        display: flex;
+        height: 28px;
+        background: var(--border);
+        border-bottom: 1px solid #222;
+        overflow: hidden;
+        position: relative;
+      }
+      .filmstrip-holes {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 0 12px;
+        animation: scrollStrip 12s linear infinite;
+        white-space: nowrap;
+      }
+      .filmstrip-holes span {
+        display: inline-block;
+        width: 10px; height: 14px;
+        background: var(--black);
+        border-radius: 2px;
+        border: 1px solid #333;
+        flex-shrink: 0;
+      }
+      @keyframes scrollStrip {
+        from { transform: translateX(0); }
+        to   { transform: translateX(-50%); }
+      }
+
+      /* ── Main layout ── */
+      .wrapper {
+        min-height: calc(100vh - 28px);
+        display: grid;
+        place-items: center;
+        padding: 4rem 1.5rem 3rem;
+      }
+
+      .card {
+        max-width: 640px;
+        width: 100%;
+        position: relative;
+      }
+
+      /* ── Rating badge ── */
+      .rating-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1.5px solid var(--red);
+        color: var(--red);
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 0.85rem;
+        letter-spacing: 0.15em;
+        padding: 4px 12px 3px;
+        border-radius: 3px;
+        margin-bottom: 2rem;
+        opacity: 0;
+        animation: fadeUp 0.6s ease 0.1s forwards;
+      }
+      .rating-badge .dot {
+        width: 6px; height: 6px;
+        background: var(--red);
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.7); }
+      }
+
+      /* ── Wordmark ── */
+      .wordmark {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(4rem, 14vw, 7.5rem);
+        line-height: 0.88;
+        letter-spacing: -0.01em;
+        opacity: 0;
+        animation: fadeUp 0.7s ease 0.25s forwards;
+      }
+      .wordmark .rr {
+        color: var(--red);
+        display: inline-block;
+        position: relative;
+      }
+      .wordmark .rr::after {
+        content: '';
+        position: absolute;
+        bottom: 4px;
+        left: 0; right: 0;
+        height: 3px;
+        background: var(--gold);
+        transform: scaleX(0);
+        transform-origin: left;
+        animation: lineIn 0.6s ease 1s forwards;
+      }
+      @keyframes lineIn { to { transform: scaleX(1); } }
+      .wordmark .movies {
+        color: var(--text);
+        display: block;
+      }
+
+      /* ── Tagline ── */
+      .tagline {
+        margin-top: 1.25rem;
+        font-size: 1rem;
+        color: var(--muted);
+        letter-spacing: 0.04em;
+        line-height: 1.6;
+        max-width: 420px;
+        opacity: 0;
+        animation: fadeUp 0.6s ease 0.5s forwards;
+      }
+      .tagline strong {
+        color: var(--gold);
+        font-weight: 500;
+      }
+
+      /* ── Divider ── */
+      .divider {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 2.5rem 0;
+        opacity: 0;
+        animation: fadeUp 0.6s ease 0.65s forwards;
+      }
+      .divider::before, .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+      .divider span {
+        font-size: 0.7rem;
+        letter-spacing: 0.2em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      /* ── Form ── */
+      .signup-block {
+        opacity: 0;
+        animation: fadeUp 0.6s ease 0.8s forwards;
+      }
+      .form-label {
+        display: block;
+        font-size: 0.78rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.75rem;
+      }
+
+      /* Mailchimp resets */
+      #mc_embed_signup { background: none !important; }
+      #mc_embed_signup form { padding: 0 !important; }
+
+      .field-row {
+        display: flex;
+        gap: 0;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+        transition: border-color 0.2s;
+        background: var(--surface);
+      }
+      .field-row:focus-within {
+        border-color: var(--red-dim);
+        box-shadow: 0 0 0 3px rgba(232,0,13,0.08);
+      }
+
+      #mce-EMAIL {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        padding: 0.85rem 1rem;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 300;
+        color: var(--text);
+        min-width: 0;
+      }
+      #mce-EMAIL::placeholder { color: var(--muted); }
+
+      #mc-embedded-subscribe {
+        background: var(--red);
+        border: none;
+        color: #fff;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1rem;
+        letter-spacing: 0.1em;
+        padding: 0 1.5rem;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.2s;
+        flex-shrink: 0;
+      }
+      #mc-embedded-subscribe:hover { background: #c0000b; }
+      #mc-embedded-subscribe:active { background: var(--red-dim); }
+
+      .form-footnote {
+        margin-top: 0.65rem;
+        font-size: 0.75rem;
+        color: var(--muted);
+        letter-spacing: 0.03em;
+      }
+      .form-footnote a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+      .form-footnote a:hover { color: var(--text); }
+
+      /* ── Footer ── */
+      .page-footer {
+        margin-top: 3.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        text-transform: uppercase;
+        opacity: 0;
+        animation: fadeUp 0.6s ease 1s forwards;
+      }
+      .page-footer a { color: var(--muted); text-decoration: none; }
+      .page-footer a:hover { color: var(--gold); }
+      .footer-right { text-align: right; }
+
+      /* ── Keyframes ── */
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 480px) {
+        .field-row { flex-direction: column; border-radius: 6px; }
+        #mc-embedded-subscribe {
+          padding: 0.85rem 1rem;
+          border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .page-footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+        .footer-right { text-align: center; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="glow-red"></div>
+    <div class="glow-gold"></div>
+
+    <!-- Animated film strip -->
+    <div class="filmstrip" aria-hidden="true">
+      <div class="filmstrip-holes">
+        <!-- 40 holes, duplicated for seamless loop -->
+        {Array.from({length: 40}).map(() => <span></span>)}
+        {Array.from({length: 40}).map(() => <span></span>)}
+      </div>
+    </div>
+
+    <div class="wrapper">
+      <main class="card">
+
+        <div class="rating-badge">
+          <span class="dot"></span>
+          Under Construction
+        </div>
+
+        <h1 class="wordmark">
+          <span class="rr">RR</span><span class="movies">ated<br/>Movies</span>
+        </h1>
+
+        <p class="tagline">
+          Something <strong>bold, unfiltered, and worth watching</strong> is on the way.
+          We're building it right. Be the first to know when the curtain rises.
+        </p>
+
+        <div class="divider">
+          <span>Get Early Access</span>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             MAILCHIMP EMBEDDED FORM
+             Replace the action URL with your own from:
+             Mailchimp → Audience → Signup forms → Embedded forms
+             Copy the full action="..." URL and paste it below.
+             Also replace the hidden bot-trap input name (b_XXXXX_XXXXX).
+             Mailchimp "From" address should be set to support@rratedmovies.win
+             (see setup instructions provided separately)
+        ════════════════════════════════════════════════════════════ -->
+        <div class="signup-block">
+          <label class="form-label" for="mce-EMAIL">Notify me when you're live</label>
+
+          <div id="mc_embed_signup">
+            <form
+              action="https://YOURSUBDOMAIN.us1.list-manage.com/subscribe/post?u=XXXXXXXXXXXXXXXXXXXXXXXXX&amp;id=XXXXXXXXXX"
+              method="post"
+              id="mc-embedded-subscribe-form"
+              name="mc-embedded-subscribe-form"
+              target="_blank"
+              novalidate
+            >
+              <div id="mc_embed_signup_scroll">
+                <div class="field-row">
+                  <input
+                    type="email"
+                    name="EMAIL"
+                    id="mce-EMAIL"
+                    placeholder="your@email.com"
+                    required
+                  />
+                  <!-- Mailchimp bot protection — DO NOT REMOVE -->
+                  <div style="position:absolute;left:-5000px" aria-hidden="true">
+                    <input type="text" name="b_XXXXXXXXXXXXXXXXXXXXXXXXX_XXXXXXXXXX" tabindex="-1" value="" />
+                  </div>
+                  <button type="submit" name="subscribe" id="mc-embedded-subscribe">
+                    Notify Me
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <p class="form-footnote">
+            Zero spam, ever. Unsubscribe any time. Confirmation emails sent from
+            <a href="mailto:support@rratedmovies.win">support@rratedmovies.win</a> · Powered by
+            <a href="https://mailchimp.com" target="_blank" rel="noopener">Mailchimp</a>.
+          </p>
+        </div>
+
+        <footer class="page-footer">
+          <span>&copy; 2025 RRatedMovies</span>
+          <span class="footer-right">
+            Questions? <a href="mailto:support@rratedmovies.win">support@rratedmovies.win</a>
+          </span>
+        </footer>
+
+      </main>
+    </div>
+  </body>
+</html>
