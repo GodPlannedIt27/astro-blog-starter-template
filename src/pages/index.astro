@@ -592,6 +592,467 @@ const archivePage = "https://archive.org/details/TheInternetsOwnBoyTheStoryOfAar
           <span>&copy; 2026+ R Rated Movies</span>
           <span class="footer-right">
             Questions? <a href="mailto:info@rratedmovies.win">info@rratedmovies.win</a>
+
+import { useState } from "react";
+
+const SECTIONS = [
+  {
+    id: "api-costs",
+    label: "01 — Real API Cost Layer",
+    color: "#FF4444",
+    content: [
+      {
+        heading: "Infrastructure Cost Stack",
+        rows: [
+          ["Claude API call (rating logic)", "~$0.003–$0.015 per request", "Varies by token count"],
+          ["Cloudflare Worker invocation", "~$0.000015 per call", "First 100k/day free"],
+          ["KV Storage read/write", "~$0.0005 per 1k ops", "Token ledger updates"],
+          ["Image processing (poster upload)", "~$0.001–$0.005", "If vision model used"],
+          ["Email routing (Mailchimp event)", "~$0.001–$0.003", "Signup/notification triggers"],
+        ],
+        note: "Every user action on rratedmovies.win fires one or more of these. The system must log actual cost per session to build the abstraction ratio.",
+      },
+      {
+        heading: "Cost Per User Action (Estimated)",
+        rows: [
+          ["Submit a movie rating", "~$0.005–$0.02", "Claude + KV + Worker"],
+          ["Request a recommendation", "~$0.01–$0.04", "Larger Claude call"],
+          ["Token gift transaction", "~$0.0002", "KV only, no Claude"],
+          ["Decision quality log entry", "~$0.002", "KV write + minor compute"],
+          ["Subscription payout calculation", "~$0.001/run", "Worker + KV read"],
+        ],
+        note: "These are the actual burn rates hidden from users. The arcade abstraction layer sits on top of these.",
+      },
+    ],
+  },
+  {
+    id: "token-economy",
+    label: "02 — Arcade Token Economy",
+    color: "#FF8C00",
+    content: [
+      {
+        heading: "Token-to-Dollar Abstraction Ratio",
+        rows: [
+          ["100 tokens", "≈ $0.01 real cost", "Base conversion (opaque to user)"],
+          ["Ratio can shift", "System-side variable", "Creates price discovery mystery"],
+          ["Rating submission", "10 tokens", "User sees this, not $0.001"],
+          ["Recommendation request", "40 tokens", "User sees this, not $0.004"],
+          ["Token gift transaction", "2 tokens", "Near-free, encourages sharing"],
+        ],
+        note: "The ratio is never published. Users learn value through experience, like arcade credits where $20 gets you 500 tokens but a ride costs 'some tokens.'",
+      },
+      {
+        heading: "Token Earning Mechanisms",
+        rows: [
+          ["Passive subscription", "10 tokens/day", "Just for being subscribed"],
+          ["Rating submission", "+15 tokens", "Providing metadata earns back more than cost"],
+          ["Decision quality score (high)", "+25 tokens bonus", "Good decisions retroactively rewarded"],
+          ["Token sharing", "+5% of gift", "Sharer gets a cut"],
+          ["Data contribution to pool", "+variable", "Based on how many users that data served"],
+        ],
+        note: "Earning always slightly exceeds spending for active users. The surplus is what funds gifting economy.",
+      },
+    ],
+  },
+  {
+    id: "hours-time",
+    label: "03 — Hours / Time-Credit System",
+    color: "#00AAFF",
+    content: [
+      {
+        heading: "Internet Cafe Model — Reimagined",
+        rows: [
+          ["Old model", "Clock runs while logged in", "Passive drain (rejected)"],
+          ["New model", "Clock runs only on real actions", "Usage-based billing"],
+          ["1 Hour credit", "= 3,600 active engagement seconds", "Not wall-clock time"],
+          ["Idle session", "0 hours consumed", "You keep your credit"],
+          ["Active rating session", "Deducts proportional to actions fired", "Granular tracking"],
+        ],
+        note: "A user could be 'subscribed' for a month but only consume 2 hours of actual engagement time. They pay/earn for the 2 hours, not the 30 days.",
+      },
+      {
+        heading: "Hours as Power",
+        rows: [
+          ["50+ hours banked", "Unlock tier-2 gifting", "Can share to non-mutuals"],
+          ["100+ hours banked", "Unlock recommendation influence", "Your ratings weight more in algo"],
+          ["200+ hours banked", "Community moderator status", "Can flag low-quality data"],
+          ["Hours + tokens combined", "Unlock premium sharing windows", "Off-peak vs peak access tiers"],
+        ],
+        note: "Hours and tokens are separate currencies but combine for access unlocks. Hours = commitment proof. Tokens = economic activity proof.",
+      },
+    ],
+  },
+  {
+    id: "user-hierarchy",
+    label: "04 — User Hierarchy + Token Gating",
+    color: "#AA44FF",
+    content: [
+      {
+        heading: "Tier Structure",
+        rows: [
+          ["Ghost", "Unregistered visitor", "No tokens, no gifting, read-only"],
+          ["Viewer", "Free registered", "Earns tokens, can gift to mutuals only"],
+          ["Subscriber", "Paid tier", "Earns faster, broader gifting access"],
+          ["Informer", "High-engagement subscriber", "Earns most, influences algorithm"],
+          ["Node", "Power user / community pillar", "Can redistribute pool tokens to others"],
+        ],
+        note: "Tier upgrades are earned through hours + decision quality scores, not just payment. Paying accelerates, but engagement is the real gate.",
+      },
+      {
+        heading: "Gifting Rules by Tier",
+        rows: [
+          ["Ghost → anyone", "BLOCKED", "Must register first"],
+          ["Viewer → Mutual", "Max 50 tokens/day", "Anti-spam gate"],
+          ["Subscriber → Any user", "Max 200 tokens/day", "Verified account only"],
+          ["Informer → Any user", "Max 500 tokens/day", "No restriction on recipient"],
+          ["Node → Pool redistribution", "Unlimited within pool rules", "Governance vote required for large moves"],
+        ],
+        note: "The Fibonacci-based password filter you designed gates tier transitions — escalating commitment signals genuine users.",
+      },
+    ],
+  },
+  {
+    id: "subscription-flip",
+    label: "05 — Subscription Flip (Getting Paid to Subscribe)",
+    color: "#00CC88",
+    content: [
+      {
+        heading: "Revenue Redistribution Model",
+        rows: [
+          ["Ad/data revenue pool", "Collected system-wide", "From data value generated by users"],
+          ["Passive payout", "Tokens + hours credit", "For being subscribed"],
+          ["Engagement bonus", "Variable token payout", "Ratings, decisions, sharing"],
+          ["Data contribution payout", "Variable", "Your metadata served X users → earn proportionally"],
+          ["Decision quality bonus", "Retroactive token grant", "Good calls rewarded in arrears"],
+        ],
+        note: "The data being sold is data that would be harvested anyway. This model intercepts that flow and redirects it back to the people who generated it.",
+      },
+      {
+        heading: "Payout Calculation Formula (Simplified)",
+        rows: [
+          ["Base", "10 tokens/day (subscribed)", "Floor payout"],
+          ["+ Engagement multiplier", "× 1.0–3.0", "Based on active hours ratio"],
+          ["+ Quality score bonus", "+ 0–25 tokens/day", "Decision quality tier"],
+          ["+ Data pool share", "+ variable", "Your data's downstream impact"],
+          ["= Daily token income", "Range: 10–100+ tokens/day", "Converted to $ at payout threshold"],
+        ],
+        note: "Users cross a payout threshold (e.g. 1,000 tokens) before any real-money conversion triggers. Below that, tokens circulate internally.",
+      },
+    ],
+  },
+  {
+    id: "calendar-budget",
+    label: "06 — Calendar + Claude Pro Budget",
+    color: "#FFD700",
+    content: [
+      {
+        heading: "Claude Pro Budget Breakdown",
+        rows: [
+          ["Claude Pro subscription", "$20/month", "Base access"],
+          ["API overage (if building)", "$0.003–$0.015/call", "Sonnet 4.6 pricing"],
+          ["Cloudflare Pages", "Free tier", "Hosting rratedmovies.win"],
+          ["Cloudflare Workers", "$5/month (paid tier)", "For backend logic"],
+          ["KV Storage", "$0.50/month est.", "Token ledger storage"],
+          ["Mailchimp", "$0–$13/month", "Depending on list size"],
+          ["Total estimated burn", "$25–$40/month", "Pre-revenue phase"],
+        ],
+        note: "The token economy eventually offsets this. User activity generates API calls which cost money, but their data contributions generate revenue that exceeds burn.",
+      },
+      {
+        heading: "Nested Calendar System",
+        rows: [
+          ["Daily view", "To-do list", "Active tasks, token targets, engagement goals"],
+          ["Weekly view", "Sprint cadence", "Feature releases, rating milestones, payout cycles"],
+          ["Monthly view", "Strategic overview", "Subscriber growth, revenue pool, tier distribution"],
+          ["Reflective layer", "Cross-view", "Previous decisions surfaced for comparison"],
+          ["Claude vs God metric", "Weekly prompt", "Did the AI-recommended path or intuition win?"],
+        ],
+        note: "The calendar isn't just scheduling — it's a decision audit trail. Every completed item feeds back into decision quality scoring.",
+      },
+    ],
+  },
+  {
+    id: "data-ethics",
+    label: "07 — Data Ethics Redirect",
+    color: "#FF6688",
+    content: [
+      {
+        heading: "The Consent Problem — Solved",
+        rows: [
+          ["Standard platform model", "Harvest without consent", "User gets nothing"],
+          ["rratedmovies.win model", "Explicit participation", "User gets token/hour payout"],
+          ["Metadata generated", "Ratings, watch patterns, decisions", "High commercial value"],
+          ["Where it goes", "Consumer data pool", "Sold to aggregators — but user gets cut"],
+          ["Opt-out option", "Stop sharing → stop earning", "Transparent tradeoff"],
+        ],
+        note: "The R-rated movie friction case is the entry point: someone can't access content they want. The system notes that, learns from it, and that friction data itself has value — which the user should receive, not just the platform.",
+      },
+    ],
+  },
+];
+
+function Section({ section, isOpen, onToggle }) {
+  return (
+    <div
+      style={{
+        borderLeft: `3px solid ${section.color}`,
+        marginBottom: "1.5rem",
+        background: "rgba(255,255,255,0.03)",
+        borderRadius: "0 8px 8px 0",
+      }}
+    >
+      <button
+        onClick={onToggle}
+        style={{
+          width: "100%",
+          textAlign: "left",
+          padding: "1rem 1.25rem",
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          color: section.color,
+          fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+          fontWeight: 700,
+          fontSize: "0.85rem",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+        }}
+      >
+        <span>{section.label}</span>
+        <span style={{ fontSize: "1.2rem", color: "rgba(255,255,255,0.4)" }}>
+          {isOpen ? "−" : "+"}
+        </span>
+      </button>
+
+      {isOpen && (
+        <div style={{ padding: "0 1.25rem 1.25rem" }}>
+          {section.content.map((block, bi) => (
+            <div key={bi} style={{ marginBottom: "1.5rem" }}>
+              <p
+                style={{
+                  color: "rgba(255,255,255,0.5)",
+                  fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+                  fontSize: "0.7rem",
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  marginBottom: "0.75rem",
+                  marginTop: 0,
+                }}
+              >
+                {block.heading}
+              </p>
+
+              <div style={{ overflowX: "auto" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: "0.8rem",
+                    fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+                  }}
+                >
+                  <tbody>
+                    {block.rows.map((row, ri) => (
+                      <tr
+                        key={ri}
+                        style={{
+                          borderBottom: "1px solid rgba(255,255,255,0.06)",
+                        }}
+                      >
+                        {row.map((cell, ci) => (
+                          <td
+                            key={ci}
+                            style={{
+                              padding: "0.5rem 0.75rem",
+                              color:
+                                ci === 0
+                                  ? "rgba(255,255,255,0.9)"
+                                  : ci === 1
+                                  ? section.color
+                                  : "rgba(255,255,255,0.45)",
+                              fontWeight: ci === 0 ? 600 : 400,
+                              whiteSpace: ci === 2 ? "normal" : "nowrap",
+                              verticalAlign: "top",
+                            }}
+                          >
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {block.note && (
+                <p
+                  style={{
+                    marginTop: "0.75rem",
+                    marginBottom: 0,
+                    padding: "0.65rem 0.85rem",
+                    background: `${section.color}11`,
+                    borderLeft: `2px solid ${section.color}55`,
+                    color: "rgba(255,255,255,0.55)",
+                    fontFamily: "system-ui, sans-serif",
+                    fontSize: "0.78rem",
+                    lineHeight: 1.6,
+                    borderRadius: "0 4px 4px 0",
+                  }}
+                >
+                  ↳ {block.note}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function App() {
+  const [openSections, setOpenSections] = useState({ "api-costs": true });
+
+  const toggle = (id) => {
+    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const allOpen = SECTIONS.every((s) => openSections[s.id]);
+  const toggleAll = () => {
+    if (allOpen) {
+      setOpenSections({});
+    } else {
+      const all = {};
+      SECTIONS.forEach((s) => (all[s.id] = true));
+      setOpenSections(all);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#0a0a0f",
+        color: "#fff",
+        padding: "2rem 1.25rem",
+        maxWidth: "860px",
+        margin: "0 auto",
+      }}
+    >
+      {/* Header */}
+      <div style={{ marginBottom: "2.5rem" }}>
+        <p
+          style={{
+            fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+            fontSize: "0.65rem",
+            letterSpacing: "0.2em",
+            color: "rgba(255,255,255,0.3)",
+            textTransform: "uppercase",
+            marginBottom: "0.5rem",
+          }}
+        >
+          rratedmovies.win — system architecture
+        </p>
+        <h1
+          style={{
+            fontFamily: "system-ui, -apple-system, sans-serif",
+            fontSize: "clamp(1.4rem, 4vw, 2.2rem)",
+            fontWeight: 800,
+            margin: 0,
+            lineHeight: 1.15,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          Dual Token Economy +<br />
+          <span style={{ color: "rgba(255,255,255,0.35)" }}>
+            Subscription Flip Architecture
+          </span>
+        </h1>
+        <p
+          style={{
+            fontFamily: "system-ui, sans-serif",
+            fontSize: "0.85rem",
+            color: "rgba(255,255,255,0.4)",
+            marginTop: "0.75rem",
+            lineHeight: 1.6,
+          }}
+        >
+          Comprehensive breakdown: real API costs → arcade abstraction → hours
+          system → user hierarchy → getting paid to subscribe → calendar +
+          budget → data ethics redirect.
+        </p>
+
+        <button
+          onClick={toggleAll}
+          style={{
+            marginTop: "1rem",
+            padding: "0.4rem 0.9rem",
+            background: "transparent",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: "4px",
+            color: "rgba(255,255,255,0.5)",
+            fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+            fontSize: "0.7rem",
+            letterSpacing: "0.08em",
+            cursor: "pointer",
+            textTransform: "uppercase",
+          }}
+        >
+          {allOpen ? "Collapse All" : "Expand All"}
+        </button>
+      </div>
+
+      {/* Sections */}
+      {SECTIONS.map((section) => (
+        <Section
+          key={section.id}
+          section={section}
+          isOpen={!!openSections[section.id]}
+          onToggle={() => toggle(section.id)}
+        />
+      ))}
+
+      {/* Footer */}
+      <div
+        style={{
+          marginTop: "3rem",
+          padding: "1rem 1.25rem",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "0.5rem",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+            fontSize: "0.65rem",
+            color: "rgba(255,255,255,0.2)",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+          }}
+        >
+          Thread reference: token-economy-v1 · June 2026
+        </span>
+        <span
+          style={{
+            fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+            fontSize: "0.65rem",
+            color: "rgba(255,255,255,0.2)",
+            letterSpacing: "0.1em",
+          }}
+        >
+          Claude or God? — TBD
+        </span>
+      </div>
+    </div>
+  );
+}
           </span>
         </footer>
 
