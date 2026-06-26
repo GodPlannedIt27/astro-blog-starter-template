@@ -1,909 +1,415 @@
----
-// src/pages/index.astro
-// RRatedMovies — Coming Soon Page
-// Replace your entire src/pages/index.astro with this file.
-// No component imports needed — fully self-contained.
-
-// The Internet's Own Boy — Aaron Swartz
-// Licensed under Creative Commons (CC BY-SA)
-// Official Internet Archive source: https://archive.org/details/TheInternetsOwnBoyTheStoryOfAaronSwartz
-
-const youtubeId = "9vz06QO3UkQ";
-const archiveDownloadUrl = "https://archive.org/download/TheInternetsOwnBoyTheStoryOfAaronSwartz/TheInternetsOwnBoy_TheStoryofAaronSwartz-HD.mp4";
-const archivePage = "https://archive.org/details/TheInternetsOwnBoyTheStoryOfAaronSwartz";
----
-
-<!doctype html>
-<html lang="en" data-theme="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="description" content="R Rated Movies — Something bold is coming. Sign up to be first in." />
-    <title>R Rated Movies — Coming Soon</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
-
-    <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-      /* Force dark mode globally — overrides OS/browser preference */
-      :root {
-        color-scheme: dark;
-        --red:     #e8000d;
-        --red-dim: #8a000a;
-        --gold:    #c9a84c;
-        --black:   #080808;
-        --surface: #111111;
-        --border:  #1e1e1e;
-        --muted:   #555;
-        --text:    #e8e0d5;
-      }
-
-      /* Prevent any light-mode overrides from browser or system */
-      @media (prefers-color-scheme: light) {
-        :root {
-          color-scheme: dark;
-          --black:   #080808;
-          --surface: #111111;
-          --border:  #1e1e1e;
-          --muted:   #555;
-          --text:    #e8e0d5;
-        }
-      }
-
-      html {
-        scroll-behavior: smooth;
-        background: #080808; /* prevents white flash on load */
-      }
-
-      body {
-        background: var(--black) !important;
-        color: var(--text) !important;
-        font-family: 'DM Sans', sans-serif;
-        font-weight: 300;
-        min-height: 100vh;
-        overflow-x: hidden;
-        cursor: default;
-        -webkit-font-smoothing: antialiased;
-      }
-
-      /* ── Film grain overlay ── */
-      body::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-        pointer-events: none;
-        z-index: 100;
-        opacity: 0.35;
-      }
-
-      /* ── Ambient glow ── */
-      .glow-red {
-        position: fixed;
-        width: 600px; height: 600px;
-        background: radial-gradient(circle, rgba(232,0,13,0.12) 0%, transparent 70%);
-        border-radius: 50%;
-        top: -150px; left: -150px;
-        pointer-events: none;
-        animation: driftA 18s ease-in-out infinite alternate;
-      }
-      .glow-gold {
-        position: fixed;
-        width: 500px; height: 500px;
-        background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
-        border-radius: 50%;
-        bottom: -100px; right: -100px;
-        pointer-events: none;
-        animation: driftB 22s ease-in-out infinite alternate;
-      }
-      @keyframes driftA { from { transform: translate(0,0); } to { transform: translate(80px, 60px); } }
-      @keyframes driftB { from { transform: translate(0,0); } to { transform: translate(-60px, -80px); } }
-
-      /* ── Film strip top bar ── */
-      .filmstrip {
-        display: flex;
-        height: 28px;
-        background: var(--border);
-        border-bottom: 1px solid #222;
-        overflow: hidden;
-        position: relative;
-      }
-      .filmstrip-holes {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        padding: 0 12px;
-        animation: scrollStrip 12s linear infinite;
-        white-space: nowrap;
-      }
-      .filmstrip-holes span {
-        display: inline-block;
-        width: 10px; height: 14px;
-        background: var(--black);
-        border-radius: 2px;
-        border: 1px solid #333;
-        flex-shrink: 0;
-      }
-      @keyframes scrollStrip {
-        from { transform: translateX(0); }
-        to   { transform: translateX(-50%); }
-      }
-
-      /* ── Main layout ── */
-      .wrapper {
-        min-height: calc(100vh - 28px);
-        display: grid;
-        place-items: center;
-        padding: 4rem 1.5rem 3rem;
-      }
-
-      .card {
-        max-width: 640px;
-        width: 100%;
-        position: relative;
-      }
-
-      /* ── Rating badge ── */
-      .rating-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border: 1.5px solid var(--red);
-        color: var(--red);
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 0.85rem;
-        letter-spacing: 0.15em;
-        padding: 4px 12px 3px;
-        border-radius: 3px;
-        margin-bottom: 2rem;
-        opacity: 0;
-        animation: fadeUp 0.6s ease 0.1s forwards;
-      }
-      .rating-badge .dot {
-        width: 6px; height: 6px;
-        background: var(--red);
-        border-radius: 50%;
-        animation: pulse 2s ease-in-out infinite;
-      }
-      @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(0.7); }
-      }
-
-      /* ── Wordmark ── */
-      .wordmark {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: clamp(4rem, 14vw, 7.5rem);
-        line-height: 0.88;
-        letter-spacing: -0.01em;
-        opacity: 0;
-        animation: fadeUp 0.7s ease 0.25s forwards;
-      }
-      .wordmark .rr {
-        color: var(--red);
-        display: inline-block;
-        position: relative;
-      }
-      .wordmark .rr::after {
-        content: '';
-        position: absolute;
-        bottom: 4px;
-        left: 0; right: 0;
-        height: 3px;
-        background: var(--gold);
-        transform: scaleX(0);
-        transform-origin: left;
-        animation: lineIn 0.6s ease 1s forwards;
-      }
-      @keyframes lineIn { to { transform: scaleX(1); } }
-      .wordmark .movies {
-        color: var(--text);
-        display: block;
-        font-size: clamp(3rem, 11vw, 6rem);
-      }
-
-      /* ── Tagline ── */
-      .tagline {
-        margin-top: 1.25rem;
-        font-size: 1rem;
-        color: var(--muted);
-        letter-spacing: 0.04em;
-        line-height: 1.6;
-        max-width: 420px;
-        opacity: 0;
-        animation: fadeUp 0.6s ease 0.5s forwards;
-      }
-      .tagline strong {
-        color: var(--gold);
-        font-weight: 500;
-      }
-
-      /* ── Divider ── */
-      .divider {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin: 2.5rem 0;
-        opacity: 0;
-        animation: fadeUp 0.6s ease 0.65s forwards;
-      }
-      .divider::before, .divider::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: var(--border);
-      }
-      .divider span {
-        font-size: 0.7rem;
-        letter-spacing: 0.2em;
-        color: var(--muted);
-        text-transform: uppercase;
-      }
-
-      /* ── Form ── */
-      .signup-block {
-        opacity: 0;
-        animation: fadeUp 0.6s ease 0.8s forwards;
-      }
-      .form-label {
-        display: block;
-        font-size: 0.78rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin-bottom: 0.75rem;
-      }
-
-      /* Mailchimp resets */
-      #mc_embed_signup { background: none !important; }
-      #mc_embed_signup form { padding: 0 !important; }
-
-      .field-row {
-        display: flex;
-        gap: 0;
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        overflow: hidden;
-        transition: border-color 0.2s;
-        background: var(--surface);
-      }
-      .field-row:focus-within {
-        border-color: var(--red-dim);
-        box-shadow: 0 0 0 3px rgba(232,0,13,0.08);
-      }
-
-      #mce-EMAIL {
-        flex: 1;
-        background: transparent;
-        border: none;
-        outline: none;
-        padding: 0.85rem 1rem;
-        font-family: 'DM Sans', sans-serif;
-        font-size: 0.95rem;
-        font-weight: 300;
-        color: var(--text);
-        min-width: 0;
-      }
-      #mce-EMAIL::placeholder { color: var(--muted); }
-
-      #mc-embedded-subscribe {
-        background: var(--red);
-        border: none;
-        color: #fff;
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 1rem;
-        letter-spacing: 0.1em;
-        padding: 0 1.5rem;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: background 0.2s;
-        flex-shrink: 0;
-      }
-      #mc-embedded-subscribe:hover { background: #c0000b; }
-      #mc-embedded-subscribe:active { background: var(--red-dim); }
-
-      .form-footnote {
-        margin-top: 0.65rem;
-        font-size: 0.75rem;
-        color: var(--muted);
-        letter-spacing: 0.03em;
-      }
-      .form-footnote a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
-      .form-footnote a:hover { color: var(--text); }
-
-      /* ── Documentary Section ── */
-      .documentary-divider {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin: 3rem 0 2rem;
-        opacity: 0;
-        animation: fadeUp 0.6s ease 1.1s forwards;
-      }
-      .documentary-divider::before, .documentary-divider::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: var(--border);
-      }
-      .documentary-divider span {
-        font-size: 0.7rem;
-        letter-spacing: 0.2em;
-        color: var(--muted);
-        text-transform: uppercase;
-      }
-
-      .documentary {
-        max-width: 640px;
-        margin: 0 auto;
-        padding: 0 0 1rem;
-        opacity: 0;
-        animation: fadeUp 0.6s ease 1.2s forwards;
-      }
-
-      .documentary__eyebrow {
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        font-size: 0.7rem;
-        color: var(--red);
-        margin-bottom: 0.4rem;
-      }
-
-      .documentary__title {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 2rem;
-        letter-spacing: 0.04em;
-        color: var(--text);
-        margin: 0 0 0.3rem;
-      }
-
-      .documentary__subtitle {
-        color: var(--muted);
-        margin-bottom: 1.25rem;
-        font-size: 0.82rem;
-        letter-spacing: 0.03em;
-      }
-
-      .documentary__embed {
-        position: relative;
-        padding-bottom: 56.25%; /* 16:9 */
-        height: 0;
-        overflow: hidden;
-        border-radius: 6px;
-        background: #000;
-        border: 1px solid var(--border);
-      }
-
-      .documentary__embed iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-      }
-
-      .documentary__actions {
-        display: flex;
-        gap: 0.75rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-      }
-
-      .doc-btn {
-        display: inline-block;
-        padding: 0.55rem 1.1rem;
-        border-radius: 4px;
-        text-decoration: none;
-        font-size: 0.82rem;
-        font-weight: 500;
-        letter-spacing: 0.04em;
-        transition: opacity 0.2s;
-      }
-      .doc-btn:hover { opacity: 0.75; }
-
-      .doc-btn--download {
-        background: var(--surface);
-        color: var(--text);
-        border: 1px solid var(--border);
-      }
-
-      .doc-btn--archive {
-        background: transparent;
-        border: 1px solid var(--muted);
-        color: var(--muted);
-      }
-      .doc-btn--archive:hover { color: var(--gold); border-color: var(--gold); opacity: 1; }
-
-      .documentary__license {
-        margin-top: 0.85rem;
-        font-size: 0.72rem;
-        color: var(--muted);
-        line-height: 1.6;
-        letter-spacing: 0.02em;
-      }
-      .documentary__license a {
-        color: var(--gold);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-      }
-      .documentary__license a:hover { color: var(--text); }
-
-      /* ── Footer ── */
-      .page-footer {
-        margin-top: 3.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 1.25rem;
-        border-top: 1px solid var(--border);
-        font-size: 0.72rem;
-        letter-spacing: 0.08em;
-        color: var(--muted);
-        text-transform: uppercase;
-        opacity: 0;
-        animation: fadeUp 0.6s ease 1.4s forwards;
-      }
-      .page-footer a { color: var(--muted); text-decoration: none; }
-      .page-footer a:hover { color: var(--gold); }
-      .footer-right { text-align: right; }
-
-      /* ── Keyframes ── */
-      @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(16px); }
-        to   { opacity: 1; transform: translateY(0); }
-      }
-
-      /* ── Responsive ── */
-      @media (max-width: 480px) {
-        .field-row { flex-direction: column; border-radius: 6px; }
-        #mc-embedded-subscribe {
-          padding: 0.85rem 1rem;
-          border-top: 1px solid rgba(255,255,255,0.06);
-        }
-        .documentary__actions { flex-direction: column; }
-        .doc-btn { text-align: center; }
-        .page-footer { flex-direction: column; gap: 0.5rem; text-align: center; }
-        .footer-right { text-align: center; }
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="glow-red"></div>
-    <div class="glow-gold"></div>
-
-    <!-- Animated film strip -->
-    <div class="filmstrip" aria-hidden="true">
-      <div class="filmstrip-holes">
-        {Array.from({length: 40}).map(() => <span></span>)}
-        {Array.from({length: 40}).map(() => <span></span>)}
-      </div>
-    </div>
-
-    <div class="wrapper">
-      <main class="card">
-
-        <div class="rating-badge">
-          <span class="dot"></span>
-          Under Construction
-        </div>
-
-        <h1 class="wordmark">
-          <span class="rr">R Rated</span><span class="movies">Movies</span>
-        </h1>
-
-        <p class="tagline">
-          Something <strong>bold, unfiltered, and worth the wait</strong> is on the way.
-          We're literally building it right now! Where do <strong>you</strong> want to be when the curtain rises?
-        </p>
-
-        <div class="divider">
-          <span>World Première Sign-Up</span>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════════
-             MAILCHIMP EMBEDDED FORM — action URL is live
-             Mailchimp "From" address should be set to info@rratedmovies.win
-        ════════════════════════════════════════════════════════════ -->
-        <div class="signup-block">
-          <label class="form-label" for="mce-EMAIL">Want an invite to our first red carpet event?</label>
-          <div id="mc_embed_signup">
-            <form
-              action="https://win.us9.list-manage.com/subscribe/post?u=c6b718cc813ee397910ccf2eb&amp;id=3e0e927fe5&amp;f_id=00df08e1f0"
-              method="post"
-              id="mc-embedded-subscribe-form"
-              name="mc-embedded-subscribe-form"
-              target="_blank"
-              novalidate
-            >
-              <div id="mc_embed_signup_scroll">
-                <div class="field-row">
-                  <input
-                    type="email"
-                    name="EMAIL"
-                    id="mce-EMAIL"
-                    placeholder="your@email.com"
-                    required
-                  />
-                  <!-- Mailchimp bot protection — DO NOT REMOVE -->
-                  <div style="position:absolute;left:-5000px" aria-hidden="true">
-                    <input type="text" name="b_c6b718cc813ee397910ccf2eb_3e0e927fe5" tabindex="-1" value="" />
-                  </div>
-                  <button type="submit" name="subscribe" id="mc-embedded-subscribe">
-                    Save Me A Seat!
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-
-          <p class="form-footnote">
-            Zero spam, ever. Unsubscribe any time. Confirmation emails sent from
-            <a href="mailto:info@rratedmovies.win">info@rratedmovies.win</a> when functioning · Powered by 
-            💜+Y'all.
-          </p>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════════
-             DOCUMENTARY — The Internet's Own Boy (Aaron Swartz)
-             CC BY-SA 3.0 — free to watch, download, and share
-        ════════════════════════════════════════════════════════════ -->
-        <div class="documentary-divider">
-          <span>Before The Curtain — From Before This Even Began</span>
-        </div>
-
-        <section class="documentary">
-          <p class="documentary__eyebrow">Prequel · Optional Viewing</p>
-          <h2 class="documentary__title">The Internet's Own Boy</h2>
-          <p class="documentary__subtitle">The Story of Aaron Swartz — Licensed under Creative Commons (CC BY-SA 3.0)</p>
-
-          <div class="documentary__embed">
-            <iframe
-              src={`https://www.youtube.com/embed/${youtubeId}`}
-              title="The Internet's Own Boy: The Story of Aaron Swartz"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-              loading="lazy"
-            ></iframe>
-          </div>
-
-          <div class="documentary__actions">
-            <a href={archiveDownloadUrl} download class="doc-btn doc-btn--download">
-              ⬇ Download for Offline Viewing (MP4)
-            </a>
-            <a href={archivePage} target="_blank" rel="noopener noreferrer" class="doc-btn doc-btn--archive">
-              View on Internet Archive ↗
-            </a>
-          </div>
-
-          <p class="documentary__license">
-            This film is freely available under a 
-            <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">
-              Creative Commons Attribution-ShareAlike 3.0
-            </a> license. You have the right to watch, download, and share it. Information wants to be free.
-          </p>
-        </section>
-
-        <footer class="page-footer">
-          <span>&copy; 2026+ R Rated Movies</span>
-          <span class="footer-right">
-            Questions? <a href="mailto:info@rratedmovies.win">info@rratedmovies.win</a>
-
 import { useState } from "react";
 
-const SECTIONS = [
+// ── Design tokens (pulled from rratedmovies.win palette) ──
+const C = {
+  red:     "#e8000d",
+  redDim:  "#8a000a",
+  gold:    "#c9a84c",
+  black:   "#080808",
+  surface: "#111111",
+  border:  "#1e1e1e",
+  muted:   "#555555",
+  text:    "#e8e0d5",
+};
+
+// ── Shared styles ──
+const mono = "'JetBrains Mono', 'Courier New', monospace";
+const bebas = "'Bebas Neue', Georgia, serif";
+const sans = "system-ui, -apple-system, sans-serif";
+
+// ═══════════════════════════════════════
+// TAB 1 — COMING SOON HERO
+// ═══════════════════════════════════════
+function HeroTab() {
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+
+  return (
+    <div style={{ maxWidth: 640, margin: "0 auto", padding: "2rem 0" }}>
+      {/* Rating badge */}
+      <div style={{
+        display: "inline-flex", alignItems: "center", gap: 8,
+        border: `1.5px solid ${C.red}`, color: C.red,
+        fontFamily: bebas, fontSize: "0.85rem", letterSpacing: "0.15em",
+        padding: "4px 12px 3px", borderRadius: 3, marginBottom: "2rem",
+      }}>
+        <span style={{
+          width: 6, height: 6, background: C.red, borderRadius: "50%",
+          display: "inline-block", animation: "rrm-pulse 2s ease-in-out infinite",
+        }} />
+        Under Construction
+      </div>
+
+      {/* Wordmark */}
+      <h1 style={{
+        fontFamily: bebas, fontSize: "clamp(3.5rem, 12vw, 7rem)",
+        lineHeight: 0.88, letterSpacing: "-0.01em", margin: 0,
+      }}>
+        <span style={{ color: C.red, display: "block" }}>R Rated</span>
+        <span style={{ color: C.text, display: "block", fontSize: "clamp(2.5rem, 9vw, 5.5rem)" }}>Movies</span>
+      </h1>
+
+      {/* Tagline */}
+      <p style={{
+        marginTop: "1.25rem", fontSize: "1rem", color: C.muted,
+        letterSpacing: "0.04em", lineHeight: 1.6, maxWidth: 420,
+        fontFamily: sans,
+      }}>
+        Something <span style={{ color: C.gold, fontWeight: 500 }}>bold, unfiltered, and worth the wait</span> is on the way.
+        We're literally building it right now.
+      </p>
+
+      {/* Divider */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: "1rem",
+        margin: "2.5rem 0", color: C.muted,
+      }}>
+        <div style={{ flex: 1, height: 1, background: C.border }} />
+        <span style={{ fontFamily: mono, fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase" }}>
+          World Première Sign-Up
+        </span>
+        <div style={{ flex: 1, height: 1, background: C.border }} />
+      </div>
+
+      {/* Email form */}
+      <label style={{
+        display: "block", fontFamily: mono, fontSize: "0.72rem",
+        letterSpacing: "0.12em", textTransform: "uppercase",
+        color: C.muted, marginBottom: "0.75rem",
+      }}>
+        Want an invite to our first red carpet event?
+      </label>
+      {sent ? (
+        <div style={{
+          padding: "1rem", background: `${C.gold}11`,
+          border: `1px solid ${C.gold}44`, borderRadius: 6,
+          color: C.gold, fontFamily: mono, fontSize: "0.8rem", letterSpacing: "0.05em",
+        }}>
+          ✓ Seat saved. We'll find you when the curtain rises.
+        </div>
+      ) : (
+        <div style={{
+          display: "flex", border: `1px solid ${C.border}`,
+          borderRadius: 6, overflow: "hidden", background: C.surface,
+        }}>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            style={{
+              flex: 1, background: "transparent", border: "none", outline: "none",
+              padding: "0.85rem 1rem", fontFamily: sans, fontSize: "0.95rem",
+              color: C.text, minWidth: 0,
+            }}
+          />
+          <button
+            onClick={() => email.includes("@") && setSent(true)}
+            style={{
+              background: C.red, border: "none", color: "#fff",
+              fontFamily: bebas, fontSize: "1rem", letterSpacing: "0.1em",
+              padding: "0 1.5rem", cursor: "pointer", whiteSpace: "nowrap",
+            }}
+          >
+            Save Me A Seat!
+          </button>
+        </div>
+      )}
+      <p style={{
+        marginTop: "0.65rem", fontSize: "0.72rem", color: C.muted,
+        fontFamily: sans, letterSpacing: "0.03em",
+      }}>
+        Zero spam, ever. Confirmation from{" "}
+        <span style={{ color: C.muted, textDecoration: "underline" }}>info@rratedmovies.win</span>{" "}
+        · Powered by 💜 + Y'all.
+      </p>
+
+      {/* Documentary section */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: "1rem",
+        margin: "3rem 0 2rem", color: C.muted,
+      }}>
+        <div style={{ flex: 1, height: 1, background: C.border }} />
+        <span style={{ fontFamily: mono, fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase" }}>
+          Before The Curtain
+        </span>
+        <div style={{ flex: 1, height: 1, background: C.border }} />
+      </div>
+
+      <div>
+        <p style={{ fontFamily: mono, fontSize: "0.68rem", letterSpacing: "0.12em", color: C.red, marginBottom: 4, textTransform: "uppercase" }}>
+          Prequel · Optional Viewing
+        </p>
+        <h2 style={{ fontFamily: bebas, fontSize: "2rem", letterSpacing: "0.04em", color: C.text, margin: "0 0 0.25rem" }}>
+          The Internet's Own Boy
+        </h2>
+        <p style={{ color: C.muted, fontSize: "0.8rem", marginBottom: "1rem", fontFamily: sans }}>
+          The Story of Aaron Swartz — CC BY-SA 3.0
+        </p>
+        <div style={{
+          position: "relative", paddingBottom: "56.25%", height: 0,
+          overflow: "hidden", borderRadius: 6, background: "#000",
+          border: `1px solid ${C.border}`,
+        }}>
+          <iframe
+            src="https://www.youtube.com/embed/9vz06QO3UkQ"
+            title="The Internet's Own Boy"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
+          />
+        </div>
+        <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem", flexWrap: "wrap" }}>
+          <a
+            href="https://archive.org/download/TheInternetsOwnBoyTheStoryOfAaronSwartz/TheInternetsOwnBoy_TheStoryofAaronSwartz-HD.mp4"
+            download
+            style={{
+              padding: "0.55rem 1.1rem", borderRadius: 4, textDecoration: "none",
+              fontSize: "0.8rem", fontWeight: 500, background: C.surface,
+              color: C.text, border: `1px solid ${C.border}`, fontFamily: sans,
+            }}
+          >
+            ⬇ Download MP4
+          </a>
+          <a
+            href="https://archive.org/details/TheInternetsOwnBoyTheStoryOfAaronSwartz"
+            target="_blank" rel="noopener noreferrer"
+            style={{
+              padding: "0.55rem 1.1rem", borderRadius: 4, textDecoration: "none",
+              fontSize: "0.8rem", fontWeight: 500, background: "transparent",
+              color: C.muted, border: `1px solid ${C.muted}`, fontFamily: sans,
+            }}
+          >
+            View on Archive ↗
+          </a>
+        </div>
+        <p style={{ marginTop: "0.85rem", fontSize: "0.72rem", color: C.muted, fontFamily: sans, lineHeight: 1.6 }}>
+          Licensed under{" "}
+          <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer"
+            style={{ color: C.gold, textDecoration: "underline" }}>
+            Creative Commons Attribution-ShareAlike 3.0
+          </a>. Information wants to be free.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════
+// TAB 2 — TOKEN SYSTEM BREAKDOWN
+// ═══════════════════════════════════════
+const TOKEN_SECTIONS = [
   {
-    id: "api-costs",
-    label: "01 — Real API Cost Layer",
-    color: "#FF4444",
+    id: "api", label: "Real API Cost Layer", color: "#FF4444",
     content: [
       {
         heading: "Infrastructure Cost Stack",
         rows: [
-          ["Claude API call (rating logic)", "~$0.003–$0.015 per request", "Varies by token count"],
-          ["Cloudflare Worker invocation", "~$0.000015 per call", "First 100k/day free"],
-          ["KV Storage read/write", "~$0.0005 per 1k ops", "Token ledger updates"],
-          ["Image processing (poster upload)", "~$0.001–$0.005", "If vision model used"],
-          ["Email routing (Mailchimp event)", "~$0.001–$0.003", "Signup/notification triggers"],
+          ["Claude API call (rating logic)", "~$0.003–$0.015/req", "Varies by token count"],
+          ["Cloudflare Worker invocation", "~$0.000015/call", "First 100k/day free"],
+          ["KV Storage read/write", "~$0.0005/1k ops", "Token ledger updates"],
+          ["Image processing", "~$0.001–$0.005", "Poster uploads"],
+          ["Email routing", "~$0.001–$0.003", "Signup triggers"],
         ],
-        note: "Every user action on rratedmovies.win fires one or more of these. The system must log actual cost per session to build the abstraction ratio.",
+        note: "Every user action fires one or more of these. Real cost is logged per session to build the abstraction ratio.",
       },
       {
-        heading: "Cost Per User Action (Estimated)",
+        heading: "Cost Per User Action",
         rows: [
-          ["Submit a movie rating", "~$0.005–$0.02", "Claude + KV + Worker"],
+          ["Submit a rating", "~$0.005–$0.02", "Claude + KV + Worker"],
           ["Request a recommendation", "~$0.01–$0.04", "Larger Claude call"],
           ["Token gift transaction", "~$0.0002", "KV only, no Claude"],
-          ["Decision quality log entry", "~$0.002", "KV write + minor compute"],
-          ["Subscription payout calculation", "~$0.001/run", "Worker + KV read"],
+          ["Decision quality log", "~$0.002", "KV write + minor compute"],
+          ["Subscription payout calc", "~$0.001/run", "Worker + KV read"],
         ],
-        note: "These are the actual burn rates hidden from users. The arcade abstraction layer sits on top of these.",
+        note: "These are the actual burn rates hidden from users. The arcade abstraction layer sits on top.",
       },
     ],
   },
   {
-    id: "token-economy",
-    label: "02 — Arcade Token Economy",
-    color: "#FF8C00",
+    id: "arcade", label: "Arcade Token Economy", color: "#FF8C00",
     content: [
       {
-        heading: "Token-to-Dollar Abstraction Ratio",
+        heading: "Token-to-Dollar Abstraction",
         rows: [
-          ["100 tokens", "≈ $0.01 real cost", "Base conversion (opaque to user)"],
-          ["Ratio can shift", "System-side variable", "Creates price discovery mystery"],
-          ["Rating submission", "10 tokens", "User sees this, not $0.001"],
-          ["Recommendation request", "40 tokens", "User sees this, not $0.004"],
-          ["Token gift transaction", "2 tokens", "Near-free, encourages sharing"],
+          ["100 tokens", "≈ $0.01 real cost", "Base conversion (opaque)"],
+          ["Ratio", "System-side variable", "Creates price discovery mystery"],
+          ["Rating submission", "10 tokens to user", "Not $0.001"],
+          ["Recommendation", "40 tokens to user", "Not $0.004"],
+          ["Gift transaction", "2 tokens", "Near-free, encourages sharing"],
         ],
-        note: "The ratio is never published. Users learn value through experience, like arcade credits where $20 gets you 500 tokens but a ride costs 'some tokens.'",
+        note: "The ratio is never published. Users learn value through experience — like arcade credits.",
       },
       {
         heading: "Token Earning Mechanisms",
         rows: [
-          ["Passive subscription", "10 tokens/day", "Just for being subscribed"],
-          ["Rating submission", "+15 tokens", "Providing metadata earns back more than cost"],
-          ["Decision quality score (high)", "+25 tokens bonus", "Good decisions retroactively rewarded"],
+          ["Passive subscription", "+10 tokens/day", "Floor payout"],
+          ["Rating submission", "+15 tokens", "Earns more than it costs"],
+          ["High decision quality", "+25 tokens bonus", "Retroactively rewarded"],
           ["Token sharing", "+5% of gift", "Sharer gets a cut"],
-          ["Data contribution to pool", "+variable", "Based on how many users that data served"],
+          ["Data contribution", "+variable", "Based on downstream impact"],
         ],
-        note: "Earning always slightly exceeds spending for active users. The surplus is what funds gifting economy.",
+        note: "Earning slightly exceeds spending for active users. Surplus funds the gifting economy.",
       },
     ],
   },
   {
-    id: "hours-time",
-    label: "03 — Hours / Time-Credit System",
-    color: "#00AAFF",
+    id: "hours", label: "Hours / Time-Credit System", color: "#00AAFF",
     content: [
       {
         heading: "Internet Cafe Model — Reimagined",
         rows: [
-          ["Old model", "Clock runs while logged in", "Passive drain (rejected)"],
-          ["New model", "Clock runs only on real actions", "Usage-based billing"],
-          ["1 Hour credit", "= 3,600 active engagement seconds", "Not wall-clock time"],
+          ["Old model", "Clock drains while logged in", "Passive drain (rejected)"],
+          ["New model", "Clock runs on real actions only", "Usage-based"],
+          ["1 Hour credit", "= 3,600 active seconds", "Not wall-clock time"],
           ["Idle session", "0 hours consumed", "You keep your credit"],
-          ["Active rating session", "Deducts proportional to actions fired", "Granular tracking"],
+          ["Active rating session", "Deducts per action fired", "Granular tracking"],
         ],
-        note: "A user could be 'subscribed' for a month but only consume 2 hours of actual engagement time. They pay/earn for the 2 hours, not the 30 days.",
+        note: "Subscribed for a month but only rated twice? You burned 2 hours, not 30 days.",
       },
       {
         heading: "Hours as Power",
         rows: [
-          ["50+ hours banked", "Unlock tier-2 gifting", "Can share to non-mutuals"],
-          ["100+ hours banked", "Unlock recommendation influence", "Your ratings weight more in algo"],
-          ["200+ hours banked", "Community moderator status", "Can flag low-quality data"],
-          ["Hours + tokens combined", "Unlock premium sharing windows", "Off-peak vs peak access tiers"],
+          ["50+ hours banked", "Tier-2 gifting unlocked", "Gift to non-mutuals"],
+          ["100+ hours banked", "Recommendation influence", "Ratings weight more in algo"],
+          ["200+ hours banked", "Community moderator", "Can flag low-quality data"],
+          ["Hours + tokens combined", "Premium sharing windows", "Off-peak vs peak tiers"],
         ],
-        note: "Hours and tokens are separate currencies but combine for access unlocks. Hours = commitment proof. Tokens = economic activity proof.",
+        note: "Hours = commitment proof. Tokens = economic activity proof. Both combine for access unlocks.",
       },
     ],
   },
   {
-    id: "user-hierarchy",
-    label: "04 — User Hierarchy + Token Gating",
-    color: "#AA44FF",
+    id: "hierarchy", label: "User Hierarchy + Token Gating", color: "#AA44FF",
     content: [
       {
         heading: "Tier Structure",
         rows: [
-          ["Ghost", "Unregistered visitor", "No tokens, no gifting, read-only"],
-          ["Viewer", "Free registered", "Earns tokens, can gift to mutuals only"],
-          ["Subscriber", "Paid tier", "Earns faster, broader gifting access"],
-          ["Informer", "High-engagement subscriber", "Earns most, influences algorithm"],
-          ["Node", "Power user / community pillar", "Can redistribute pool tokens to others"],
+          ["Ghost", "Unregistered visitor", "No tokens, read-only"],
+          ["Viewer", "Free registered", "Earns tokens, gift to mutuals only"],
+          ["Subscriber", "Paid tier", "Earns faster, broader gifting"],
+          ["Informer", "High-engagement subscriber", "Influences algorithm"],
+          ["Node", "Power user", "Redistributes pool tokens"],
         ],
-        note: "Tier upgrades are earned through hours + decision quality scores, not just payment. Paying accelerates, but engagement is the real gate.",
+        note: "Tier upgrades earned through hours + decision quality — not just payment. Paying accelerates, engagement gates.",
       },
       {
         heading: "Gifting Rules by Tier",
         rows: [
           ["Ghost → anyone", "BLOCKED", "Must register first"],
           ["Viewer → Mutual", "Max 50 tokens/day", "Anti-spam gate"],
-          ["Subscriber → Any user", "Max 200 tokens/day", "Verified account only"],
-          ["Informer → Any user", "Max 500 tokens/day", "No restriction on recipient"],
-          ["Node → Pool redistribution", "Unlimited within pool rules", "Governance vote required for large moves"],
+          ["Subscriber → Any user", "Max 200 tokens/day", "Verified accounts only"],
+          ["Informer → Any user", "Max 500 tokens/day", "No restriction"],
+          ["Node → Pool", "Unlimited (governance)", "Vote required for large moves"],
         ],
-        note: "The Fibonacci-based password filter you designed gates tier transitions — escalating commitment signals genuine users.",
+        note: "Fibonacci-based password filter gates tier transitions — escalating commitment signals genuine users.",
       },
     ],
   },
   {
-    id: "subscription-flip",
-    label: "05 — Subscription Flip (Getting Paid to Subscribe)",
-    color: "#00CC88",
+    id: "subflip", label: "Subscription Flip", color: "#00CC88",
     content: [
       {
-        heading: "Revenue Redistribution Model",
+        heading: "Getting Paid to Subscribe",
         rows: [
-          ["Ad/data revenue pool", "Collected system-wide", "From data value generated by users"],
+          ["Ad/data revenue pool", "Collected system-wide", "From user-generated data value"],
           ["Passive payout", "Tokens + hours credit", "For being subscribed"],
           ["Engagement bonus", "Variable token payout", "Ratings, decisions, sharing"],
-          ["Data contribution payout", "Variable", "Your metadata served X users → earn proportionally"],
-          ["Decision quality bonus", "Retroactive token grant", "Good calls rewarded in arrears"],
+          ["Data contribution", "Variable", "Your metadata served X users → earn proportionally"],
+          ["Decision quality bonus", "Retroactive grant", "Good calls rewarded in arrears"],
         ],
-        note: "The data being sold is data that would be harvested anyway. This model intercepts that flow and redirects it back to the people who generated it.",
+        note: "Data that would be harvested anyway — intercepted and redirected back to the people who generated it.",
       },
       {
-        heading: "Payout Calculation Formula (Simplified)",
+        heading: "Daily Payout Formula",
         rows: [
-          ["Base", "10 tokens/day (subscribed)", "Floor payout"],
-          ["+ Engagement multiplier", "× 1.0–3.0", "Based on active hours ratio"],
-          ["+ Quality score bonus", "+ 0–25 tokens/day", "Decision quality tier"],
-          ["+ Data pool share", "+ variable", "Your data's downstream impact"],
-          ["= Daily token income", "Range: 10–100+ tokens/day", "Converted to $ at payout threshold"],
+          ["Base", "10 tokens/day (subscribed)", "Floor"],
+          ["+ Engagement multiplier", "× 1.0–3.0", "Active hours ratio"],
+          ["+ Quality bonus", "+ 0–25 tokens/day", "Decision quality tier"],
+          ["+ Data pool share", "+ variable", "Downstream impact"],
+          ["= Daily income", "10–100+ tokens/day", "Converts at 1,000 token threshold"],
         ],
-        note: "Users cross a payout threshold (e.g. 1,000 tokens) before any real-money conversion triggers. Below that, tokens circulate internally.",
+        note: "Below 1,000 tokens, value circulates internally. Above threshold: real-money conversion triggers.",
       },
     ],
   },
   {
-    id: "calendar-budget",
-    label: "06 — Calendar + Claude Pro Budget",
-    color: "#FFD700",
-    content: [
-      {
-        heading: "Claude Pro Budget Breakdown",
-        rows: [
-          ["Claude Pro subscription", "$20/month", "Base access"],
-          ["API overage (if building)", "$0.003–$0.015/call", "Sonnet 4.6 pricing"],
-          ["Cloudflare Pages", "Free tier", "Hosting rratedmovies.win"],
-          ["Cloudflare Workers", "$5/month (paid tier)", "For backend logic"],
-          ["KV Storage", "$0.50/month est.", "Token ledger storage"],
-          ["Mailchimp", "$0–$13/month", "Depending on list size"],
-          ["Total estimated burn", "$25–$40/month", "Pre-revenue phase"],
-        ],
-        note: "The token economy eventually offsets this. User activity generates API calls which cost money, but their data contributions generate revenue that exceeds burn.",
-      },
-      {
-        heading: "Nested Calendar System",
-        rows: [
-          ["Daily view", "To-do list", "Active tasks, token targets, engagement goals"],
-          ["Weekly view", "Sprint cadence", "Feature releases, rating milestones, payout cycles"],
-          ["Monthly view", "Strategic overview", "Subscriber growth, revenue pool, tier distribution"],
-          ["Reflective layer", "Cross-view", "Previous decisions surfaced for comparison"],
-          ["Claude vs God metric", "Weekly prompt", "Did the AI-recommended path or intuition win?"],
-        ],
-        note: "The calendar isn't just scheduling — it's a decision audit trail. Every completed item feeds back into decision quality scoring.",
-      },
-    ],
-  },
-  {
-    id: "data-ethics",
-    label: "07 — Data Ethics Redirect",
-    color: "#FF6688",
+    id: "ethics", label: "Data Ethics Redirect", color: "#FF6688",
     content: [
       {
         heading: "The Consent Problem — Solved",
         rows: [
-          ["Standard platform model", "Harvest without consent", "User gets nothing"],
-          ["rratedmovies.win model", "Explicit participation", "User gets token/hour payout"],
+          ["Standard platform", "Harvest without consent", "User gets nothing"],
+          ["RRM model", "Explicit participation", "User gets token/hour payout"],
           ["Metadata generated", "Ratings, watch patterns, decisions", "High commercial value"],
-          ["Where it goes", "Consumer data pool", "Sold to aggregators — but user gets cut"],
-          ["Opt-out option", "Stop sharing → stop earning", "Transparent tradeoff"],
+          ["Flow direction", "Consumer data pool", "Sold — but user gets cut"],
+          ["Opt-out", "Stop sharing → stop earning", "Transparent tradeoff"],
         ],
-        note: "The R-rated movie friction case is the entry point: someone can't access content they want. The system notes that, learns from it, and that friction data itself has value — which the user should receive, not just the platform.",
+        note: "The R-rated friction case is the entry point: blocked content, system learns, that friction has value — which the user should receive.",
       },
     ],
   },
 ];
 
-function Section({ section, isOpen, onToggle }) {
+function TokenSection({ section, isOpen, onToggle }) {
   return (
-    <div
-      style={{
-        borderLeft: `3px solid ${section.color}`,
-        marginBottom: "1.5rem",
-        background: "rgba(255,255,255,0.03)",
-        borderRadius: "0 8px 8px 0",
-      }}
-    >
-      <button
-        onClick={onToggle}
-        style={{
-          width: "100%",
-          textAlign: "left",
-          padding: "1rem 1.25rem",
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          color: section.color,
-          fontFamily: "'JetBrains Mono', 'Courier New', monospace",
-          fontWeight: 700,
-          fontSize: "0.85rem",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-        }}
-      >
+    <div style={{
+      borderLeft: `3px solid ${section.color}`,
+      marginBottom: "1.25rem",
+      background: "rgba(255,255,255,0.02)",
+      borderRadius: "0 6px 6px 0",
+    }}>
+      <button onClick={onToggle} style={{
+        width: "100%", textAlign: "left", padding: "0.9rem 1.1rem",
+        background: "transparent", border: "none", cursor: "pointer",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        color: section.color, fontFamily: mono, fontWeight: 700,
+        fontSize: "0.75rem", letterSpacing: "0.08em", textTransform: "uppercase",
+      }}>
         <span>{section.label}</span>
-        <span style={{ fontSize: "1.2rem", color: "rgba(255,255,255,0.4)" }}>
+        <span style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.3)" }}>
           {isOpen ? "−" : "+"}
         </span>
       </button>
-
       {isOpen && (
-        <div style={{ padding: "0 1.25rem 1.25rem" }}>
+        <div style={{ padding: "0 1.1rem 1.1rem" }}>
           {section.content.map((block, bi) => (
-            <div key={bi} style={{ marginBottom: "1.5rem" }}>
-              <p
-                style={{
-                  color: "rgba(255,255,255,0.5)",
-                  fontFamily: "'JetBrains Mono', 'Courier New', monospace",
-                  fontSize: "0.7rem",
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  marginBottom: "0.75rem",
-                  marginTop: 0,
-                }}
-              >
-                {block.heading}
-              </p>
-
+            <div key={bi} style={{ marginBottom: "1.25rem" }}>
+              <p style={{
+                color: "rgba(255,255,255,0.4)", fontFamily: mono,
+                fontSize: "0.63rem", letterSpacing: "0.14em",
+                textTransform: "uppercase", marginBottom: "0.6rem", marginTop: 0,
+              }}>{block.heading}</p>
               <div style={{ overflowX: "auto" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontSize: "0.8rem",
-                    fontFamily: "'JetBrains Mono', 'Courier New', monospace",
-                  }}
-                >
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem", fontFamily: mono }}>
                   <tbody>
                     {block.rows.map((row, ri) => (
-                      <tr
-                        key={ri}
-                        style={{
-                          borderBottom: "1px solid rgba(255,255,255,0.06)",
-                        }}
-                      >
+                      <tr key={ri} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                         {row.map((cell, ci) => (
-                          <td
-                            key={ci}
-                            style={{
-                              padding: "0.5rem 0.75rem",
-                              color:
-                                ci === 0
-                                  ? "rgba(255,255,255,0.9)"
-                                  : ci === 1
-                                  ? section.color
-                                  : "rgba(255,255,255,0.45)",
-                              fontWeight: ci === 0 ? 600 : 400,
-                              whiteSpace: ci === 2 ? "normal" : "nowrap",
-                              verticalAlign: "top",
-                            }}
-                          >
-                            {cell}
-                          </td>
+                          <td key={ci} style={{
+                            padding: "0.45rem 0.6rem", verticalAlign: "top",
+                            color: ci === 0 ? "rgba(255,255,255,0.9)" : ci === 1 ? section.color : "rgba(255,255,255,0.38)",
+                            fontWeight: ci === 0 ? 600 : 400,
+                            whiteSpace: ci === 2 ? "normal" : "nowrap",
+                          }}>{cell}</td>
                         ))}
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-
               {block.note && (
-                <p
-                  style={{
-                    marginTop: "0.75rem",
-                    marginBottom: 0,
-                    padding: "0.65rem 0.85rem",
-                    background: `${section.color}11`,
-                    borderLeft: `2px solid ${section.color}55`,
-                    color: "rgba(255,255,255,0.55)",
-                    fontFamily: "system-ui, sans-serif",
-                    fontSize: "0.78rem",
-                    lineHeight: 1.6,
-                    borderRadius: "0 4px 4px 0",
-                  }}
-                >
-                  ↳ {block.note}
-                </p>
+                <p style={{
+                  marginTop: "0.6rem", marginBottom: 0,
+                  padding: "0.6rem 0.75rem",
+                  background: `${section.color}0d`,
+                  borderLeft: `2px solid ${section.color}44`,
+                  color: "rgba(255,255,255,0.45)",
+                  fontFamily: sans, fontSize: "0.73rem", lineHeight: 1.6,
+                  borderRadius: "0 4px 4px 0",
+                }}>↳ {block.note}</p>
               )}
             </div>
           ))}
@@ -913,150 +419,592 @@ function Section({ section, isOpen, onToggle }) {
   );
 }
 
-export default function App() {
-  const [openSections, setOpenSections] = useState({ "api-costs": true });
-
-  const toggle = (id) => {
-    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const allOpen = SECTIONS.every((s) => openSections[s.id]);
+function TokenTab() {
+  const [open, setOpen] = useState({ api: true });
+  const toggle = id => setOpen(p => ({ ...p, [id]: !p[id] }));
+  const allOpen = TOKEN_SECTIONS.every(s => open[s.id]);
   const toggleAll = () => {
-    if (allOpen) {
-      setOpenSections({});
-    } else {
-      const all = {};
-      SECTIONS.forEach((s) => (all[s.id] = true));
-      setOpenSections(all);
-    }
+    if (allOpen) setOpen({});
+    else { const a = {}; TOKEN_SECTIONS.forEach(s => a[s.id] = true); setOpen(a); }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#0a0a0f",
-        color: "#fff",
-        padding: "2rem 1.25rem",
-        maxWidth: "860px",
-        margin: "0 auto",
-      }}
-    >
-      {/* Header */}
-      <div style={{ marginBottom: "2.5rem" }}>
-        <p
-          style={{
-            fontFamily: "'JetBrains Mono', 'Courier New', monospace",
-            fontSize: "0.65rem",
-            letterSpacing: "0.2em",
-            color: "rgba(255,255,255,0.3)",
-            textTransform: "uppercase",
-            marginBottom: "0.5rem",
-          }}
-        >
-          rratedmovies.win — system architecture
-        </p>
-        <h1
-          style={{
-            fontFamily: "system-ui, -apple-system, sans-serif",
-            fontSize: "clamp(1.4rem, 4vw, 2.2rem)",
-            fontWeight: 800,
-            margin: 0,
-            lineHeight: 1.15,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Dual Token Economy +<br />
-          <span style={{ color: "rgba(255,255,255,0.35)" }}>
-            Subscription Flip Architecture
-          </span>
-        </h1>
-        <p
-          style={{
-            fontFamily: "system-ui, sans-serif",
-            fontSize: "0.85rem",
-            color: "rgba(255,255,255,0.4)",
-            marginTop: "0.75rem",
-            lineHeight: 1.6,
-          }}
-        >
-          Comprehensive breakdown: real API costs → arcade abstraction → hours
-          system → user hierarchy → getting paid to subscribe → calendar +
-          budget → data ethics redirect.
-        </p>
-
-        <button
-          onClick={toggleAll}
-          style={{
-            marginTop: "1rem",
-            padding: "0.4rem 0.9rem",
-            background: "transparent",
-            border: "1px solid rgba(255,255,255,0.15)",
-            borderRadius: "4px",
-            color: "rgba(255,255,255,0.5)",
-            fontFamily: "'JetBrains Mono', 'Courier New', monospace",
-            fontSize: "0.7rem",
-            letterSpacing: "0.08em",
-            cursor: "pointer",
-            textTransform: "uppercase",
-          }}
-        >
-          {allOpen ? "Collapse All" : "Expand All"}
+    <div>
+      <div style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div>
+          <p style={{ fontFamily: mono, fontSize: "0.6rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.25)", textTransform: "uppercase", marginBottom: 4 }}>
+            System Architecture
+          </p>
+          <h2 style={{ fontFamily: sans, fontSize: "1.4rem", fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>
+            Dual Token Economy
+          </h2>
+        </div>
+        <button onClick={toggleAll} style={{
+          padding: "0.35rem 0.8rem", background: "transparent",
+          border: `1px solid rgba(255,255,255,0.12)`, borderRadius: 4,
+          color: "rgba(255,255,255,0.4)", fontFamily: mono, fontSize: "0.65rem",
+          letterSpacing: "0.08em", cursor: "pointer", textTransform: "uppercase",
+        }}>
+          {allOpen ? "Collapse" : "Expand All"}
         </button>
       </div>
-
-      {/* Sections */}
-      {SECTIONS.map((section) => (
-        <Section
-          key={section.id}
-          section={section}
-          isOpen={!!openSections[section.id]}
-          onToggle={() => toggle(section.id)}
-        />
+      {TOKEN_SECTIONS.map(s => (
+        <TokenSection key={s.id} section={s} isOpen={!!open[s.id]} onToggle={() => toggle(s.id)} />
       ))}
+    </div>
+  );
+}
 
-      {/* Footer */}
-      <div
-        style={{
-          marginTop: "3rem",
-          padding: "1rem 1.25rem",
-          borderTop: "1px solid rgba(255,255,255,0.08)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "0.5rem",
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "'JetBrains Mono', 'Courier New', monospace",
-            fontSize: "0.65rem",
-            color: "rgba(255,255,255,0.2)",
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-          }}
-        >
-          Thread reference: token-economy-v1 · June 2026
-        </span>
-        <span
-          style={{
-            fontFamily: "'JetBrains Mono', 'Courier New', monospace",
-            fontSize: "0.65rem",
-            color: "rgba(255,255,255,0.2)",
-            letterSpacing: "0.1em",
-          }}
-        >
-          Claude or God? — TBD
-        </span>
+// ═══════════════════════════════════════
+// TAB 3 — CALENDAR SYSTEM
+// ═══════════════════════════════════════
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+const SAMPLE_TASKS = {
+  daily: [
+    { id: 1, text: "Review token payout calculations", done: false, tokens: 15, type: "system" },
+    { id: 2, text: "Rate 3 R-rated films for dataset", done: false, tokens: 45, type: "content" },
+    { id: 3, text: "Check Cloudflare Worker logs", done: true, tokens: 10, type: "infra" },
+    { id: 4, text: "Respond to subscriber data questions", done: false, tokens: 20, type: "community" },
+    { id: 5, text: "Decision quality audit — last week", done: false, tokens: 30, type: "reflection" },
+  ],
+  weekly: [
+    { id: 6, text: "Ship token ledger KV schema", type: "infra", day: "Mon" },
+    { id: 7, text: "Fibonacci filter test pass", type: "system", day: "Tue" },
+    { id: 8, text: "KROQ pitch document revision", type: "content", day: "Wed" },
+    { id: 9, text: "Subscriber payout threshold review", type: "system", day: "Thu" },
+    { id: 10, text: "Community node nominations", type: "community", day: "Fri" },
+  ],
+};
+
+const TYPE_COLORS = {
+  system: C.red, content: C.gold, infra: "#00AAFF", community: "#AA44FF", reflection: "#00CC88",
+};
+
+function CalendarTab() {
+  const [view, setView] = useState("daily");
+  const [tasks, setTasks] = useState(SAMPLE_TASKS.daily);
+  const [reflection, setReflection] = useState("");
+  const [judge, setJudge] = useState(null);
+
+  const now = new Date(2026, 5, 25); // June 25 2026
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const today = now.getDate();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const toggleTask = id => setTasks(ts => ts.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  const totalTokens = tasks.reduce((s, t) => s + (t.done ? t.tokens : 0), 0);
+
+  return (
+    <div>
+      <div style={{ marginBottom: "1.5rem" }}>
+        <p style={{ fontFamily: mono, fontSize: "0.6rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.25)", textTransform: "uppercase", marginBottom: 4 }}>
+          Decision Audit Trail
+        </p>
+        <h2 style={{ fontFamily: sans, fontSize: "1.4rem", fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>
+          Calendar + Task System
+        </h2>
+      </div>
+
+      {/* View switcher */}
+      <div style={{ display: "flex", gap: 4, marginBottom: "1.5rem" }}>
+        {["daily", "weekly", "monthly"].map(v => (
+          <button key={v} onClick={() => setView(v)} style={{
+            padding: "0.4rem 1rem", borderRadius: 4, border: "none", cursor: "pointer",
+            fontFamily: mono, fontSize: "0.68rem", letterSpacing: "0.08em", textTransform: "uppercase",
+            background: view === v ? C.red : C.surface,
+            color: view === v ? "#fff" : C.muted,
+          }}>{v}</button>
+        ))}
+      </div>
+
+      {/* DAILY VIEW */}
+      {view === "daily" && (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+            <span style={{ fontFamily: mono, fontSize: "0.7rem", color: C.muted, letterSpacing: "0.1em" }}>
+              THU · JUNE 25 · 2026
+            </span>
+            <span style={{
+              fontFamily: mono, fontSize: "0.7rem", color: C.gold, letterSpacing: "0.05em",
+              background: `${C.gold}11`, padding: "2px 8px", borderRadius: 3,
+            }}>
+              {totalTokens} tokens earned today
+            </span>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {tasks.map(task => (
+              <div key={task.id}
+                onClick={() => toggleTask(task.id)}
+                style={{
+                  display: "flex", alignItems: "flex-start", gap: 12,
+                  padding: "0.75rem 1rem", borderRadius: 6, cursor: "pointer",
+                  background: task.done ? "rgba(255,255,255,0.02)" : C.surface,
+                  border: `1px solid ${task.done ? "rgba(255,255,255,0.05)" : C.border}`,
+                  transition: "all 0.15s",
+                }}
+              >
+                <div style={{
+                  width: 18, height: 18, borderRadius: 4, flexShrink: 0, marginTop: 1,
+                  border: `1.5px solid ${task.done ? TYPE_COLORS[task.type] : C.border}`,
+                  background: task.done ? `${TYPE_COLORS[task.type]}33` : "transparent",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "0.65rem", color: TYPE_COLORS[task.type],
+                }}>
+                  {task.done ? "✓" : ""}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{
+                    margin: 0, fontFamily: sans, fontSize: "0.85rem",
+                    color: task.done ? C.muted : C.text,
+                    textDecoration: task.done ? "line-through" : "none",
+                  }}>{task.text}</p>
+                  <span style={{
+                    fontFamily: mono, fontSize: "0.63rem", color: TYPE_COLORS[task.type],
+                    letterSpacing: "0.06em", textTransform: "uppercase",
+                  }}>{task.type} · +{task.tokens} tokens</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Reflection block */}
+          <div style={{ marginTop: "2rem", padding: "1.25rem", background: C.surface, borderRadius: 8, border: `1px solid ${C.border}` }}>
+            <p style={{ fontFamily: mono, fontSize: "0.65rem", letterSpacing: "0.14em", color: C.muted, textTransform: "uppercase", marginBottom: "0.75rem" }}>
+              Daily Reflection — Claude or God?
+            </p>
+            <textarea
+              value={reflection}
+              onChange={e => setReflection(e.target.value)}
+              placeholder="What decision did you make today? How did it play out?"
+              style={{
+                width: "100%", background: C.black, border: `1px solid ${C.border}`,
+                borderRadius: 4, padding: "0.75rem", color: C.text,
+                fontFamily: sans, fontSize: "0.83rem", lineHeight: 1.6,
+                resize: "vertical", minHeight: 80, outline: "none",
+              }}
+            />
+            <div style={{ display: "flex", gap: 8, marginTop: "0.75rem", flexWrap: "wrap" }}>
+              {["Claude was right", "God was right", "Too early to tell"].map(opt => (
+                <button key={opt} onClick={() => setJudge(opt)} style={{
+                  padding: "0.4rem 0.85rem", borderRadius: 4, cursor: "pointer",
+                  fontFamily: mono, fontSize: "0.65rem", letterSpacing: "0.06em",
+                  border: `1px solid ${judge === opt ? C.gold : C.border}`,
+                  background: judge === opt ? `${C.gold}18` : "transparent",
+                  color: judge === opt ? C.gold : C.muted,
+                }}>{opt}</button>
+              ))}
+            </div>
+            {judge && (
+              <p style={{ marginTop: "0.65rem", fontFamily: mono, fontSize: "0.68rem", color: C.gold, letterSpacing: "0.05em" }}>
+                ✓ Logged: "{judge}" — feeds into decision quality score
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* WEEKLY VIEW */}
+      {view === "weekly" && (
+        <div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: "1rem" }}>
+            {DAYS.map(d => (
+              <div key={d} style={{
+                textAlign: "center", fontFamily: mono, fontSize: "0.6rem",
+                color: C.muted, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 0",
+              }}>{d}</div>
+            ))}
+            {DAYS.map((d, i) => (
+              <div key={i} style={{
+                aspectRatio: "1", borderRadius: 4, display: "flex", alignItems: "center",
+                justifyContent: "center", fontFamily: mono, fontSize: "0.75rem",
+                background: d === "Thu" ? C.red : C.surface,
+                color: d === "Thu" ? "#fff" : C.muted,
+                border: `1px solid ${d === "Thu" ? C.red : C.border}`,
+              }}>
+                {["S", "M", "T", "W", "T", "F", "S"][i]}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {SAMPLE_TASKS.weekly.map(task => (
+              <div key={task.id} style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "0.7rem 1rem", borderRadius: 6,
+                background: C.surface, border: `1px solid ${C.border}`,
+              }}>
+                <span style={{
+                  fontFamily: mono, fontSize: "0.65rem", color: TYPE_COLORS[task.type],
+                  letterSpacing: "0.06em", width: 30, textAlign: "center",
+                  background: `${TYPE_COLORS[task.type]}14`, padding: "2px 4px", borderRadius: 3,
+                }}>{task.day}</span>
+                <span style={{ fontFamily: sans, fontSize: "0.85rem", color: C.text, flex: 1 }}>{task.text}</span>
+                <span style={{
+                  fontFamily: mono, fontSize: "0.6rem", color: C.muted,
+                  textTransform: "uppercase", letterSpacing: "0.06em",
+                }}>{task.type}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* MONTHLY VIEW */}
+      {view === "monthly" && (
+        <div>
+          <p style={{ fontFamily: mono, fontSize: "0.7rem", color: C.muted, letterSpacing: "0.1em", marginBottom: "1rem" }}>
+            {MONTHS[month].toUpperCase()} {year}
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+            {DAYS.map(d => (
+              <div key={d} style={{
+                textAlign: "center", fontFamily: mono, fontSize: "0.58rem",
+                color: "rgba(255,255,255,0.25)", letterSpacing: "0.06em",
+                textTransform: "uppercase", paddingBottom: 6,
+              }}>{d.slice(0,1)}</div>
+            ))}
+            {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
+            {Array.from({ length: daysInMonth }).map((_, i) => {
+              const day = i + 1;
+              const isToday = day === today;
+              return (
+                <div key={day} style={{
+                  aspectRatio: "1", borderRadius: 4, display: "flex",
+                  alignItems: "center", justifyContent: "center",
+                  fontFamily: mono, fontSize: "0.72rem",
+                  background: isToday ? C.red : day < today ? "rgba(255,255,255,0.03)" : C.surface,
+                  color: isToday ? "#fff" : day < today ? "rgba(255,255,255,0.25)" : C.text,
+                  border: `1px solid ${isToday ? C.red : C.border}`,
+                  fontWeight: isToday ? 700 : 400,
+                  position: "relative",
+                }}>
+                  {day}
+                  {[2,8,14,20,25].includes(day) && !isToday && (
+                    <span style={{
+                      position: "absolute", bottom: 3, left: "50%",
+                      transform: "translateX(-50%)",
+                      width: 4, height: 4, borderRadius: "50%",
+                      background: [2,8].includes(day) ? C.gold : [14].includes(day) ? "#00AAFF" : C.red,
+                    }} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Monthly metrics */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginTop: "1.5rem" }}>
+            {[
+              { label: "Subscribers", value: "—", color: C.red },
+              { label: "Token pool", value: "0", color: C.gold },
+              { label: "Avg decision quality", value: "—", color: "#00CC88" },
+              { label: "Est. monthly burn", value: "$25–40", color: "#00AAFF" },
+            ].map(m => (
+              <div key={m.label} style={{
+                padding: "0.85rem", background: C.surface, borderRadius: 6,
+                border: `1px solid ${C.border}`,
+              }}>
+                <p style={{ fontFamily: mono, fontSize: "0.6rem", color: C.muted, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>
+                  {m.label}
+                </p>
+                <p style={{ fontFamily: bebas, fontSize: "1.6rem", color: m.color, margin: 0, letterSpacing: "0.04em" }}>
+                  {m.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════
+// TAB 4 — SUBSCRIPTION FLIP
+// ═══════════════════════════════════════
+function SubTab() {
+  const [tier, setTier] = useState("viewer");
+  const [hours, setHours] = useState(12);
+  const [ratings, setRatings] = useState(3);
+  const [sharing, setSharing] = useState(false);
+
+  const engMult = Math.min(3, 1 + (hours / 200) * 2 + (ratings / 20));
+  const base = 10;
+  const qualBonus = ratings >= 5 ? 15 : ratings >= 2 ? 8 : 3;
+  const shareBonus = sharing ? 8 : 0;
+  const tierMult = tier === "ghost" ? 0 : tier === "viewer" ? 1 : tier === "subscriber" ? 1.4 : tier === "informer" ? 1.8 : 2.2;
+  const daily = Math.round((base + qualBonus + shareBonus) * engMult * tierMult);
+  const monthly = daily * 30;
+  const dollarVal = (monthly / 100 * 0.01).toFixed(4);
+
+  const TIERS = [
+    { id: "ghost", label: "Ghost", color: C.muted },
+    { id: "viewer", label: "Viewer", color: "#00AAFF" },
+    { id: "subscriber", label: "Subscriber", color: C.gold },
+    { id: "informer", label: "Informer", color: C.red },
+    { id: "node", label: "Node", color: "#AA44FF" },
+  ];
+
+  return (
+    <div>
+      <div style={{ marginBottom: "1.5rem" }}>
+        <p style={{ fontFamily: mono, fontSize: "0.6rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.25)", textTransform: "uppercase", marginBottom: 4 }}>
+          Revenue Redistribution
+        </p>
+        <h2 style={{ fontFamily: sans, fontSize: "1.4rem", fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>
+          Get Paid to Subscribe
+        </h2>
+        <p style={{ color: C.muted, fontFamily: sans, fontSize: "0.82rem", marginTop: "0.4rem", lineHeight: 1.5 }}>
+          Your data has value. We intercept what platforms harvest silently and redirect it back to you.
+        </p>
+      </div>
+
+      {/* Tier selector */}
+      <div style={{ marginBottom: "1.5rem" }}>
+        <p style={{ fontFamily: mono, fontSize: "0.65rem", color: C.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.6rem" }}>
+          Your tier
+        </p>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {TIERS.map(t => (
+            <button key={t.id} onClick={() => setTier(t.id)} style={{
+              padding: "0.4rem 0.9rem", borderRadius: 4, cursor: "pointer",
+              fontFamily: mono, fontSize: "0.68rem", letterSpacing: "0.06em",
+              border: `1px solid ${tier === t.id ? t.color : C.border}`,
+              background: tier === t.id ? `${t.color}18` : "transparent",
+              color: tier === t.id ? t.color : C.muted,
+            }}>{t.label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Sliders */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.5rem" }}>
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+            <span style={{ fontFamily: mono, fontSize: "0.65rem", color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Hours banked
+            </span>
+            <span style={{ fontFamily: mono, fontSize: "0.65rem", color: "#00AAFF" }}>{hours}h</span>
+          </div>
+          <input type="range" min={0} max={200} value={hours} onChange={e => setHours(+e.target.value)}
+            style={{ width: "100%", accentColor: "#00AAFF" }} />
+        </div>
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+            <span style={{ fontFamily: mono, fontSize: "0.65rem", color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Ratings submitted
+            </span>
+            <span style={{ fontFamily: mono, fontSize: "0.65rem", color: C.gold }}>{ratings}</span>
+          </div>
+          <input type="range" min={0} max={30} value={ratings} onChange={e => setRatings(+e.target.value)}
+            style={{ width: "100%", accentColor: C.gold }} />
+        </div>
+        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+          <div
+            onClick={() => setSharing(s => !s)}
+            style={{
+              width: 36, height: 20, borderRadius: 10, position: "relative", cursor: "pointer",
+              background: sharing ? C.red : C.border, transition: "background 0.2s",
+            }}
+          >
+            <div style={{
+              position: "absolute", top: 2, left: sharing ? 18 : 2,
+              width: 16, height: 16, borderRadius: "50%",
+              background: "#fff", transition: "left 0.2s",
+            }} />
+          </div>
+          <span style={{ fontFamily: mono, fontSize: "0.65rem", color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Token sharing active
+          </span>
+        </label>
+      </div>
+
+      {/* Payout breakdown */}
+      <div style={{
+        padding: "1.25rem", background: C.surface, borderRadius: 8,
+        border: `1px solid ${C.border}`, marginBottom: "1rem",
+      }}>
+        <p style={{ fontFamily: mono, fontSize: "0.63rem", color: C.muted, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "1rem" }}>
+          Daily Payout Breakdown
+        </p>
+        {[
+          { label: "Base (subscribed)", value: `${tier === "ghost" ? 0 : base} tokens`, color: C.text },
+          { label: `Engagement ×${engMult.toFixed(2)}`, value: `+${Math.round(base * (engMult - 1))} tokens`, color: "#00AAFF" },
+          { label: "Quality bonus", value: `+${qualBonus} tokens`, color: C.gold },
+          { label: "Sharing bonus", value: `+${shareBonus} tokens`, color: C.red },
+          { label: `Tier multiplier (${tier}) ×${tierMult}`, value: "", color: "#AA44FF" },
+        ].map(row => (
+          <div key={row.label} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "0.4rem 0", borderBottom: `1px solid rgba(255,255,255,0.04)`,
+          }}>
+            <span style={{ fontFamily: mono, fontSize: "0.7rem", color: C.muted }}>{row.label}</span>
+            <span style={{ fontFamily: mono, fontSize: "0.7rem", color: row.color, fontWeight: 600 }}>{row.value}</span>
+          </div>
+        ))}
+        <div style={{ marginTop: "0.85rem", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <div>
+            <p style={{ fontFamily: mono, fontSize: "0.6rem", color: C.muted, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 2px" }}>Daily</p>
+            <p style={{ fontFamily: bebas, fontSize: "2.2rem", color: C.red, margin: 0, letterSpacing: "0.04em", lineHeight: 1 }}>
+              {tier === "ghost" ? 0 : daily} <span style={{ fontSize: "1rem", color: C.muted }}>tokens</span>
+            </p>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <p style={{ fontFamily: mono, fontSize: "0.6rem", color: C.muted, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 2px" }}>Monthly</p>
+            <p style={{ fontFamily: bebas, fontSize: "2.2rem", color: C.gold, margin: 0, letterSpacing: "0.04em", lineHeight: 1 }}>
+              {tier === "ghost" ? 0 : monthly} <span style={{ fontSize: "1rem", color: C.muted }}>tokens</span>
+            </p>
+          </div>
+        </div>
+        {tier !== "ghost" && (
+          <p style={{ fontFamily: mono, fontSize: "0.65rem", color: "rgba(255,255,255,0.25)", marginTop: "0.65rem", letterSpacing: "0.04em" }}>
+            ≈ ${dollarVal} real value at current conversion · threshold: 1,000 tokens
+          </p>
+        )}
+        {tier === "ghost" && (
+          <p style={{ fontFamily: mono, fontSize: "0.68rem", color: C.muted, marginTop: "0.65rem" }}>
+            Register to start earning. Information wants to be free — and so does your data's value.
+          </p>
+        )}
+      </div>
+
+      {/* Budget */}
+      <div style={{ padding: "1rem", background: `${C.gold}08`, borderRadius: 8, border: `1px solid ${C.gold}22` }}>
+        <p style={{ fontFamily: mono, fontSize: "0.63rem", color: C.gold, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "0.75rem" }}>
+          Claude Pro + Infrastructure Budget
+        </p>
+        {[
+          ["Claude Pro", "$20/mo", "Base access"],
+          ["Cloudflare Workers", "$5/mo", "Backend logic"],
+          ["KV Storage", "~$0.50/mo", "Token ledger"],
+          ["Mailchimp", "$0–13/mo", "Email routing"],
+          ["API overage", "$0.003–0.015/call", "Scales with usage"],
+          ["Total pre-revenue", "$25–40/mo", "Until token economy offsets"],
+        ].map(row => (
+          <div key={row[0]} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "0.35rem 0", borderBottom: `1px solid ${C.gold}11`,
+          }}>
+            <span style={{ fontFamily: mono, fontSize: "0.68rem", color: C.text }}>{row[0]}</span>
+            <span style={{ fontFamily: mono, fontSize: "0.68rem", color: C.gold }}>{row[1]}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
-          </span>
-        </footer>
 
-      </main>
+// ═══════════════════════════════════════
+// ROOT APP
+// ═══════════════════════════════════════
+const TABS = [
+  { id: "hero", label: "Coming Soon" },
+  { id: "tokens", label: "Token System" },
+  { id: "calendar", label: "Calendar" },
+  { id: "sub", label: "Sub Flip" },
+];
+
+export default function App() {
+  const [tab, setTab] = useState("hero");
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: C.black,
+      color: C.text,
+      fontFamily: sans,
+    }}>
+      {/* Film strip */}
+      <div style={{
+        height: 24, background: C.border, borderBottom: `1px solid #222`,
+        overflow: "hidden", display: "flex", alignItems: "center",
+      }}>
+        <div style={{
+          display: "flex", gap: 16, padding: "0 10px",
+          animation: "rrm-scroll 10s linear infinite",
+          whiteSpace: "nowrap",
+        }}>
+          {Array.from({ length: 60 }).map((_, i) => (
+            <span key={i} style={{
+              display: "inline-block", width: 9, height: 13,
+              background: C.black, borderRadius: 2, border: `1px solid #333`,
+              flexShrink: 0,
+            }} />
+          ))}
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div style={{
+        display: "flex", borderBottom: `1px solid ${C.border}`,
+        background: C.surface, position: "sticky", top: 0, zIndex: 50,
+        overflowX: "auto",
+      }}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{
+            padding: "0.85rem 1.25rem", background: "transparent",
+            border: "none", borderBottom: `2px solid ${tab === t.id ? C.red : "transparent"}`,
+            cursor: "pointer", fontFamily: mono, fontSize: "0.68rem",
+            letterSpacing: "0.08em", textTransform: "uppercase",
+            color: tab === t.id ? C.text : C.muted,
+            whiteSpace: "nowrap", transition: "color 0.15s",
+          }}>{t.label}</button>
+        ))}
+        {/* Ambient glow accent */}
+        <div style={{
+          marginLeft: "auto", display: "flex", alignItems: "center",
+          paddingRight: "1rem", gap: 6,
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.red, animation: "rrm-pulse 2s ease-in-out infinite" }} />
+          <span style={{ fontFamily: mono, fontSize: "0.58rem", color: C.muted, letterSpacing: "0.1em" }}>
+            rratedmovies.win
+          </span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: "2rem 1.25rem", maxWidth: 860, margin: "0 auto" }}>
+        {tab === "hero" && <HeroTab />}
+        {tab === "tokens" && <TokenTab />}
+        {tab === "calendar" && <CalendarTab />}
+        {tab === "sub" && <SubTab />}
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        borderTop: `1px solid ${C.border}`, padding: "1rem 1.25rem",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        flexWrap: "wrap", gap: "0.5rem", maxWidth: 860, margin: "0 auto",
+      }}>
+        <span style={{ fontFamily: mono, fontSize: "0.6rem", color: "rgba(255,255,255,0.18)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+          © 2026+ R Rated Movies · Thread ref: rrm-integrated-v1
+        </span>
+        <span style={{ fontFamily: mono, fontSize: "0.6rem", color: "rgba(255,255,255,0.18)", letterSpacing: "0.08em" }}>
+          Claude or God? — TBD
+        </span>
+      </div>
+
+      <style>{`
+        @keyframes rrm-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.7); }
+        }
+        @keyframes rrm-scroll {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+        * { box-sizing: border-box; }
+        textarea { box-sizing: border-box; }
+        input[type="range"] { cursor: pointer; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+      `}</style>
     </div>
-  </body>
-</html>
+  );
+}
